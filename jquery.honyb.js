@@ -25,7 +25,7 @@
  *
  * HONYB INTEGRATION LIBRARY
  *
- * Version 0.1.0
+ * Version 0.2.0
  *
  * Provides easy hooks for integrating with the Honyb.com bookstore service.
  */
@@ -43,13 +43,13 @@
 
     // Create the defaults once
     var pluginName = 'honyb',
-            defaults = {
-                affiliate_key:'honyb',
-                width:"90%",
-                height:"90%",
-                opacity:.5,
-                image_size:'small' // small, medium, product, large,
-            };
+        defaults = {
+            affiliate_key:'honyb',
+            width:"90%",
+            height:"90%",
+            opacity:.5,
+            image_size:'small' // small, medium, product, large,
+        };
 
     // The actual plugin constructor
     function Plugin(element, options) {
@@ -80,6 +80,7 @@
         var view = element.data('view');
         var template = product_brief;
 
+        var contents = element.html();
         empty_contents(element);
 
         if (element.is('DIV')) {
@@ -90,29 +91,44 @@
             } else if (view == 'mosaic') {
                 template = honyb_template(cover);
                 element.addClass('mosaic');
+            } else if (view == 'minimal') {
+                template = honyb_template(product_minimal);
             } else {
                 template = honyb_template(product_brief);
             }
-        } else {
+        } else if (contents == null) {
             template = inline;
+
+        } else {
+            template = inline_contents;
         }
 
         for (var i = 0; i < skus.length; i++) {
             var sku = $.trim(skus[i]);
             $.getJSON("http://honyb.com/products/" + sku + ".jsonp?callback=?", {},
-                    function (data) {
-                        var product = data.product;
-                        product['image_size'] = options.image_size;
-                        product['author'] = get_author(product);
-                        product['subtitle'] = get_subtitle(product);
-                        product['specs'] = get_specs(product);
-                        product['price'] = get_price(product);
-                        element.append($.mustache(template, product)).show();
-                        $('.price').formatCurrency();
+                function (data) {
+                    var product = data.product;
+                    product['image_size'] = get_image_size(element, options);
+                    product['author'] = get_author(product);
+                    product['subtitle'] = get_subtitle(product);
+                    product['specs'] = get_specs(product);
+                    product['price'] = get_price(product);
+                    product['contents'] = contents;
+                    element.append($.mustache(template, product)).show();
+                    $('.price').formatCurrency();
 
-                    });
+                });
         }
 
+
+    }
+
+    function get_image_size(element, options) {
+        if (element.data('size') != null) {
+            return element.data('size');
+        }
+
+        return options.image_size;
 
     }
 
@@ -160,42 +176,56 @@
 
     function honyb_template(template) {
         return '<div class="honyb">' +
-                template +
-                '</div>';
+            template +
+            '</div>';
 
     }
 
     var inline = '<span class="honyb-popup" data-sku="{{master.sku}}">{{name}}</span>';
 
+    var inline_contents = '<span class="honyb-popup" data-sku="{{master.sku}}">{{{contents}}}</span>';
+
     var cover = '<div class="cover">' +
-            '<div class="product-image">' +
-            '{{#images}}' +
-            '<img src="http://www.honyb.com/spree/products/{{id}}/{{image_size}}/{{attachment_file_name}}" class="honyb-popup" data-sku="{{master.sku}}" alt="{{name}}" />' +
-            '{{/images}}' +
-            '</div>' +
-            '</div>';
+        '<div class="product-image">' +
+        '{{#images}}' +
+        '<img src="http://www.honyb.com/spree/products/{{id}}/{{image_size}}/{{attachment_file_name}}" class="honyb-popup" data-sku="{{master.sku}}" alt="{{name}}" />' +
+        '{{/images}}' +
+        '</div>' +
+        '</div>';
 
     var cover_buy = '<div class="cover">' +
-            '<div class="product-image">' +
-            '{{#images}}' +
-            '<img src="http://www.honyb.com/spree/products/{{id}}/{{image_size}}/{{attachment_file_name}}" class="honyb-popup" data-sku="{{master.sku}}" alt="{{name}}" />' +
-            '{{/images}}' +
-            '</div>' +
-            '<div class="honyb-popup button orange" data-sku="{{master.sku}}">buy now</div>' +
-            '</div>';
+        '<div class="product-image">' +
+        '{{#images}}' +
+        '<img src="http://www.honyb.com/spree/products/{{id}}/{{image_size}}/{{attachment_file_name}}" class="honyb-popup" data-sku="{{master.sku}}" alt="{{name}}" />' +
+        '{{/images}}' +
+        '</div>' +
+        '<div class="honyb-popup button orange" data-sku="{{master.sku}}">buy now</div>' +
+        '</div>';
 
     var product_brief = '<div class="book">' +
-            cover_buy +
-            '<div class="info">' +
-            '<div class="title-and-subtitle">' +
-            '<div class="honyb-popup title" data-sku="{{master.sku}}">{{{name}}}</div>' +
-            '{{#subtitle}}<div class="subtitle">{{{subtitle}}}</div>{{/subtitle}}' +
-            '</div>' +
-            '{{#author}}<div class="author">{{{author}}}</div>{{/author}}' +
-            '<div class="price-and-shipping"><span class="price">{{price}}</span>, <span class="free-shipping">free shipping</span></div>' +
-            '{{#specs}}<div class="specs">{{specs}}</div>{{/specs}}' +
-            '<div class="description">{{{description}}}</div>' +
-            '</div><div class="clear"></div></div>';
+        cover_buy +
+        '<div class="info">' +
+        '<div class="title-and-subtitle">' +
+        '<div class="honyb-popup title" data-sku="{{master.sku}}">{{{name}}}</div>' +
+        '{{#subtitle}}<div class="subtitle">{{{subtitle}}}</div>{{/subtitle}}' +
+        '</div>' +
+        '{{#author}}<div class="author">{{{author}}}</div>{{/author}}' +
+        '<div class="price-and-shipping"><span class="price">{{price}}</span>, <span class="free-shipping">free shipping</span></div>' +
+        '{{#specs}}<div class="specs">{{{specs}}}</div>{{/specs}}' +
+        '<div class="description">{{{description}}}</div>' +
+        '</div><div class="clear"></div></div>';
+
+    var product_minimal = '<div class="book">' +
+        cover_buy +
+        '<div class="info">' +
+        '<div class="title-and-subtitle">' +
+        '<div class="honyb-popup title" data-sku="{{master.sku}}">{{{name}}}</div>' +
+        '{{#subtitle}}<div class="subtitle">{{{subtitle}}}</div>{{/subtitle}}' +
+        '</div>' +
+        '{{#author}}<div class="author">{{{author}}}</div>{{/author}}' +
+        '<div class="price-and-shipping"><span class="price">{{price}}</span>, <span class="free-shipping">free shipping</span></div>' +
+        '{{#specs}}<div class="specs">{{{specs}}}</div>{{/specs}}' +
+        '</div><div class="clear"></div></div>';
 
     var inline_link = '<div class="buy-text">Buy online <span class="honyb-popup inline" data-sku="{{master.sku}}">from the Boston Review Bookstore.</span></div>';
 
@@ -244,7 +274,7 @@
                 $.data(this, plugin_name, new Plugin(this, options));
             }
 
-            // last time through, initialize the popus
+            // last time through, initialize the pop-ups
             if (--count == 0) {
                 activate_popups($.data(this, plugin_name).options);
             }

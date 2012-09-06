@@ -38,7 +38,8 @@
 
 <h2>Include Dependencies</h2>
 
-<p>Honyb requires jQuery 1.7.1 or later and the honyb.js file. Include them both in the &lt;HEAD&gt; section of your html
+<p>Honyb requires jQuery 1.7.1 or later and the honyb.js file. Include them both in the &lt;HEAD&gt; section of your
+    html
     file.</p>
 
 <script src="https://gist.github.com/2158596.js?file=honyb-head-embed.js"></script>
@@ -74,12 +75,13 @@
     <li><code>product-brief</code>: <em>[default]</em> displays the cover, buy button, title, author, specs and
         description.
     </li>
+    <li><code>minimal</code>: displays the cover, buy button, title, author and specs.</li>
     <li><code>cover</code>: displays the cover only.</li>
     <li><code>cover-buy</code>: displays the cover and buy button.</li>
     <li><code>mosaic</code>: displays covers all floated left into a mosaic grid.</li>
 </ul>
 
-<h3>Foating Right/Left</h3>
+<h3>Floating Right/Left</h3>
 
 <p>Add the class <code>left</code> or <code>right</code> after the <code>honyb-embed</code> class to control floating.
 </p>
@@ -98,6 +100,8 @@
 <p>This is a test of an inline link to a book.
     In this case we are linking to <span class="honyb-embed" data-sku='9780061537189'></span>.
 </p>
+
+<p>And if you want to link custom text, use this: <span class="honyb-embed" data-sku='9780061537189'>I am linked!</span></p>
 
 <h3>Cover And Buy Button</h3>
 
@@ -122,7 +126,7 @@
 
 <div class="clear"></div>
 
-<h3>Prouduct Brief</h3>
+<h3>Product Brief</h3>
 
 <div class="honyb-embed" data-sku="9781555974831"></div>
 
@@ -165,6 +169,7 @@
 9781566892513,
 9780670022953">
     </div>
+</div>
 
 </body>
 </html>
